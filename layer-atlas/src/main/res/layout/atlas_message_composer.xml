@@ -21,7 +21,7 @@
 
     <ImageView
         android:id="@+id/attachment"
-        style="?android:attr/borderlessButtonStyle"
+        style="@style/AtlasMessageComposer.AttachmentButton"
         android:layout_width="@dimen/atlas_icon_button_size"
         android:layout_height="match_parent"
         android:layout_marginLeft="@dimen/atlas_icon_button_side_padding"
@@ -32,23 +32,24 @@
 
     <EditText
         android:id="@+id/message_edit_text"
+        style="@style/AtlasMessageComposer.Message"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_weight="1"
         android:hint="@string/atlas_message_composer_hint"
         android:maxLines="3"
-        android:minHeight="@dimen/atlas_input_height"
         android:textSize="@dimen/atlas_text_size_input"
         />
 
     <Button
         android:id="@+id/send_button"
-        style="?android:attr/borderlessButtonStyle"
+        style="@style/AtlasMessageComposer.SendButton"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_marginLeft="@dimen/atlas_icon_button_side_padding"
         android:layout_marginRight="@dimen/atlas_icon_button_side_padding"
+        android:minHeight="@dimen/atlas_input_height"
         android:text="@string/atlas_message_composer_send_button"
         android:textSize="@dimen/atlas_text_size_button"
         />

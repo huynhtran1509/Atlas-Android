@@ -6,7 +6,7 @@
     <style name="Theme.Atlas.Base.Light" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="AtlasConversationList">@style/AtlasConversationList</item>
         <item name="AtlasMessageComposer">@style/AtlasMessageComposer</item>
-        <item name="AtlasMessageList">@style/AtlasMessageList</item>
+        <item name="AtlasMessagesRecyclerView">@style/AtlasMessagesRecyclerView</item>
         <item name="AtlasParticipantPicker">@style/AtlasParticipantPicker</item>
         <item name="AtlasTypingIndicator">@style/AtlasTypingIndicator</item>
 
@@ -18,7 +18,7 @@
 
         <item name="actionBarStyle">@style/AtlasActionBar</item>
         <item name="actionBarTabTextStyle">@style/AtlasActionBarTabText</item>
-        <item name="actionMenuTextColor">@color/atlas_text_white</item>
+        <item name="actionMenuTextColor">@color/atlas_cell_me_text</item>
         <item name="actionButtonStyle">@style/AtlasActionBarButton</item>
         <item name="actionOverflowButtonStyle">@style/AtlasActionBarOverflowButton</item>
 

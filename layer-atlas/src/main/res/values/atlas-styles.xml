@@ -25,7 +25,23 @@
         <item name="android:enabled">true</item>
     </style>
 
-    <style name="AtlasMessageList">
+    <style name="AtlasMessageComposer.AttachmentButton" parent="Widget.AppCompat.Button.Borderless">
+
+    </style>
+
+    <style name="AtlasMessageComposer.Message">
+
+    </style>
+
+    <style name="AtlasMessageComposer.SendButton" parent="Widget.AppCompat.Button.Borderless">
+
+    </style>
+
+    <style name="AtlasHistoricMessagesFetchLayout">
+
+    </style>
+
+    <style name="AtlasMessagesRecyclerView">
     </style>
 
     <style name="AtlasParticipantPicker">
@@ -44,19 +60,19 @@
     </style>
 
     <style name="AtlasActionBarTitleText" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
-        <item name="android:textColor">@color/atlas_text_white</item>
+        <item name="android:textColor">@color/atlas_cell_me_text</item>
     </style>
 
     <style name="AtlasActionBarTabText" parent="@style/Widget.AppCompat.ActionBar.TabText">
-        <item name="android:textColor">@color/atlas_text_white</item>
+        <item name="android:textColor">@color/atlas_cell_me_text</item>
     </style>
 
     <style name="AtlasActionBarButton" parent="@style/Widget.AppCompat.ActionButton">
-        <item name="android:tint">@color/atlas_text_white</item>
+        <item name="android:tint">@color/atlas_cell_me_text</item>
     </style>
 
     <style name="AtlasActionBarOverflowButton" parent="@style/Widget.AppCompat.ActionButton.Overflow">
-        <item name="android:tint">@color/atlas_text_white</item>
+        <item name="android:tint">@color/atlas_cell_me_text</item>
     </style>
 
 </resources>

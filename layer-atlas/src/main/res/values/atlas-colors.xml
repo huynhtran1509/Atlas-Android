@@ -28,9 +28,9 @@
 
     <color name="atlas_floating_button">@color/atlas_color_primary_blue</color>
 
-    <color name="atlas_text_black">@android:color/black</color>
+    <color name="atlas_cell_them_text">@android:color/black</color>
     <color name="atlas_text_gray">#FF757575</color>
-    <color name="atlas_text_white">@android:color/white</color>
+    <color name="atlas_cell_me_text">@android:color/white</color>
     <color name="atlas_text_blue">@color/atlas_color_primary_blue</color>
 
     <color name="atlas_button_text_enabled">@android:color/black</color>

@@ -47,7 +47,7 @@ public class GenericCellFactory extends AtlasCellFactory<GenericCellFactory.Cell
         v.setBackgroundResource(isMe ? R.drawable.atlas_message_item_cell_me : R.drawable.atlas_message_item_cell_them);
 
         TextView t = (TextView) v.findViewById(R.id.cell_text);
-        t.setTextColor(context.getResources().getColor(isMe ? R.color.atlas_text_white : R.color.atlas_text_black));
+        t.setTextColor(context.getResources().getColor(isMe ? R.color.atlas_cell_me_text : R.color.atlas_cell_them_text));
         return new CellHolder(v);
     }
 
