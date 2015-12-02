@@ -32,6 +32,7 @@
             android:layout_height="@dimen/atlas_primary_icon_size"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="@dimen/atlas_padding_normal"
+            android:layout_marginStart="@dimen/atlas_padding_normal"
             android:src="@drawable/ic_delete_white_24dp"
             android:tint="@color/atlas_icon_enabled"/>
 
@@ -90,6 +91,7 @@
                         android:layout_weight="1"
                         android:singleLine="true"
                         android:text="[title]"
+                        android:textColor="@color/atlas_text_conversation_title"
                         android:textSize="@dimen/atlas_text_size_primary_item_title"
                         />
 
@@ -101,7 +103,7 @@
                         android:paddingLeft="@dimen/atlas_padding_narrow"
                         android:singleLine="true"
                         android:text="[time]"
-                        android:textColor="@color/atlas_text_blue"
+                        android:textColor="@color/atlas_text_time"
                         android:textSize="@dimen/atlas_text_size_primary_item_metadata"
                         />
 
@@ -114,6 +116,7 @@
                     android:layout_weight="1"
                     android:singleLine="true"
                     android:text="[last message]"
+                    android:textColor="@color/atlas_text_conversation_last_message"
                     android:textSize="@dimen/atlas_text_size_primary_item_subtitle"
                     />
             </LinearLayout>

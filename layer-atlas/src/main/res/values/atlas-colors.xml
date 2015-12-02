@@ -31,7 +31,9 @@
     <color name="atlas_cell_them_text">@android:color/black</color>
     <color name="atlas_text_gray">#FF757575</color>
     <color name="atlas_cell_me_text">@android:color/white</color>
-    <color name="atlas_text_blue">@color/atlas_color_primary_blue</color>
+    <color name="atlas_text_conversation_title">@color/atlas_color_primary_blue</color>
+    <color name="atlas_text_conversation_last_message">@color/atlas_color_primary_blue</color>
+    <color name="atlas_text_time">@color/atlas_color_primary_blue</color>
 
     <color name="atlas_button_text_enabled">@android:color/black</color>
     <color name="atlas_button_text_disabled">#42000000</color>

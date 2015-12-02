@@ -56,6 +56,7 @@
             android:orientation="horizontal"
             android:paddingBottom="@dimen/atlas_message_item_time_group_padding_bottom"
             android:paddingTop="@dimen/atlas_message_item_time_group_padding_top"
+            style="@style/AtlasMessagesRecyclerView.Time"
             >
 
             <TextView

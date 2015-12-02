@@ -44,6 +44,9 @@
     <style name="AtlasMessagesRecyclerView">
     </style>
 
+    <style name="AtlasMessagesRecyclerView.Time">
+    </style>
+
     <style name="AtlasParticipantPicker">
     </style>
 
