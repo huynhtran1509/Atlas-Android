@@ -96,9 +96,13 @@ public class AtlasMessageComposer extends FrameLayout {
         mAttachButton = (ImageView) findViewById(R.id.attachment);
         mAttachButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                LinearLayout menu = (LinearLayout) mAttachmentMenu.getContentView();
-                menu.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-                mAttachmentMenu.showAsDropDown(v, 0, -menu.getMeasuredHeight() - v.getHeight());
+                if (mAttachmentMenu.isShowing()) {
+                    mAttachmentMenu.dismiss();
+                } else {
+                    LinearLayout menu = (LinearLayout) mAttachmentMenu.getContentView();
+                    menu.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+                    mAttachmentMenu.showAsDropDown(v, 0, -menu.getMeasuredHeight() - v.getHeight());
+                }
             }
         });
 
