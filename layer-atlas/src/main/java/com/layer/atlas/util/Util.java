@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Util {
-    private static final String METADATA_KEY_CONVERSATION_TITLE = "conversationName";
+    public static final String METADATA_KEY_CONVERSATION_TITLE = "conversationName";
     private static final int TIME_HOURS_24 = 24 * 60 * 60 * 1000;
     private static final SimpleDateFormat DAY_OF_WEEK = new SimpleDateFormat("EEE, LLL dd,", Locale.US);
 
