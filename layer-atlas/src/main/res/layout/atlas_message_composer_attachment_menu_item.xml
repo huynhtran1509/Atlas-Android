@@ -36,7 +36,7 @@
         android:layout_gravity="center"
         android:paddingLeft="@dimen/atlas_padding_normal"
         android:text="[title]"
-        android:textColor="@color/atlas_cell_them_text"
+        android:textColor="@color/atlas_cell_attachment_title"
         android:textSize="@dimen/atlas_text_size_dropdown_item"
         />
 

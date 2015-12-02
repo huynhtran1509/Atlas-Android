@@ -35,6 +35,8 @@
     <color name="atlas_text_conversation_last_message">@color/atlas_color_primary_blue</color>
     <color name="atlas_text_time">@color/atlas_color_primary_blue</color>
 
+    <color name="atlas_cell_attachment_title">@android:color/black</color>
+
     <color name="atlas_button_text_enabled">@android:color/black</color>
     <color name="atlas_button_text_disabled">#42000000</color>
     <color name="atlas_button_text_pressed">@color/atlas_color_primary_blue</color>
