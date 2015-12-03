@@ -3,6 +3,7 @@ package com.layer.atlas.messagetypes.location;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -31,13 +32,34 @@ public class LocationSender extends AttachmentSender {
 
     private static GoogleApiClient sGoogleApiClient;
 
+    @SuppressWarnings("unused")
     public LocationSender(int titleResId, Integer iconResId, Activity activity) {
-        this(activity.getString(titleResId), iconResId, activity);
+        super(titleResId, iconResId, activity);
     }
 
+    @SuppressWarnings("unused")
     public LocationSender(String title, Integer iconResId, Activity activity) {
-        super(title, iconResId);
-        init(activity);
+        super(title, iconResId, activity);
+    }
+
+    @SuppressWarnings("unused")
+    public LocationSender(int titleResId, Integer iconResId, android.app.Fragment fragment) {
+        super(titleResId, iconResId, fragment);
+    }
+
+    @SuppressWarnings("unused")
+    public LocationSender(String title, Integer iconResId, android.app.Fragment fragment) {
+        super(title, iconResId, fragment);
+    }
+
+    @SuppressWarnings("unused")
+    public LocationSender(int titleResId, Integer iconResId, Fragment fragment) {
+        super(titleResId, iconResId, fragment);
+    }
+
+    @SuppressWarnings("unused")
+    public LocationSender(String title, Integer iconResId, Fragment fragment) {
+        super(title, iconResId, fragment);
     }
 
     /**
@@ -58,7 +80,7 @@ public class LocationSender extends AttachmentSender {
                             .put(LocationCellFactory.KEY_LATITUDE, location.getLatitude())
                             .put(LocationCellFactory.KEY_LONGITUDE, location.getLongitude())
                             .put(LocationCellFactory.KEY_LABEL, myName);
-                    String notification = getContext().getString(R.string.atlas_notification_location, myName);
+                    String notification = getActivity().getString(R.string.atlas_notification_location, myName);
                     MessagePart part = getLayerClient().newMessagePart(LocationCellFactory.MIME_TYPE, o.toString().getBytes());
                     Message message = getLayerClient().newMessage(new MessageOptions().pushNotificationMessage(notification), part);
                     send(message);
@@ -72,25 +94,25 @@ public class LocationSender extends AttachmentSender {
     }
 
     @Override
-    public boolean onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+    public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode != GOOGLE_API_REQUEST_CODE) return false;
-        init(activity);
+        init();
         return true;
     }
 
-    private void init(final Activity activity) {
+    private void init() {
         // If the client has already been created, ensure connected and return.
         if (sGoogleApiClient != null) {
             if (!sGoogleApiClient.isConnected()) connectGoogleApi();
             return;
         }
 
-        int errorCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity);
+        int errorCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(getActivity());
 
         // If the correct Google Play Services are available, connect and return. 
         if (errorCode == ConnectionResult.SUCCESS) {
             GoogleApiCallbacks googleApiCallbacks = new GoogleApiCallbacks();
-            sGoogleApiClient = new GoogleApiClient.Builder(activity)
+            sGoogleApiClient = new GoogleApiClient.Builder(getActivity())
                     .addConnectionCallbacks(googleApiCallbacks)
                     .addOnConnectionFailedListener(googleApiCallbacks)
                     .addApi(LocationServices.API)
@@ -102,7 +124,7 @@ public class LocationSender extends AttachmentSender {
         // If the correct Google Play Services are not available, redirect to proper solution.
         if (GooglePlayServicesUtil.isUserRecoverableError(errorCode)) {
             GoogleApiAvailability.getInstance()
-                    .getErrorDialog(activity, errorCode, GOOGLE_API_REQUEST_CODE)
+                    .getErrorDialog(getActivity(), errorCode, GOOGLE_API_REQUEST_CODE)
                     .show();
             return;
         }

@@ -229,9 +229,9 @@ public class AtlasMessageComposer extends FrameLayout {
      * @param data        Intent data from the Activity's onActivityResult.
      * @return this AtlasMessageComposer.
      */
-    public AtlasMessageComposer onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
+    public AtlasMessageComposer onActivityResult(int requestCode, int resultCode, Intent data) {
         for (AttachmentSender sender : mAttachmentSenders) {
-            sender.onActivityResult(activity, requestCode, resultCode, data);
+            sender.onActivityResult(requestCode, resultCode, data);
         }
         return this;
     }
