@@ -153,9 +153,11 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
         viewHolder.mTitleView.setText(Util.getConversationTitle(mLayerClient, mParticipantProvider, conversation));
 
         if (lastMessage == null) {
-            viewHolder.mMessageView.setText(null);
+            viewHolder.mMessageView.setTypeface(null, Typeface.ITALIC);
+            viewHolder.mMessageView.setText(R.string.atlas_message_placeholder);
             viewHolder.mTimeView.setText(null);
         } else {
+            viewHolder.mMessageView.setTypeface(null, Typeface.NORMAL);
             viewHolder.mMessageView.setText(Util.getLastMessageString(context, lastMessage));
             viewHolder.mTitleView.setTypeface(null, (conversation.getTotalUnreadMessageCount() > 0) ? Typeface.BOLD : Typeface.NORMAL);
             if (lastMessage.getSentAt() == null) {
