@@ -23,6 +23,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.layer.atlas.adapters.AtlasConversationsAdapter;
+import com.layer.atlas.messagetypes.AtlasCellFactory;
 import com.layer.atlas.provider.ParticipantProvider;
 import com.layer.atlas.util.itemanimators.NoChangeAnimator;
 import com.layer.atlas.util.views.SwipeableItem;
@@ -112,6 +113,16 @@ public class AtlasConversationsRecyclerView extends RecyclerView {
      */
     public AtlasConversationsRecyclerView setInitialHistoricMessagesToFetch(long count) {
         mAdapter.setInitialHistoricMessagesToFetch(count);
+        return this;
+    }
+
+    /**
+     * Convenience pass-through to this list's AtlasConversationsAdapter.
+     *
+     * @see AtlasConversationsAdapter#addCellFactories(AtlasCellFactory...)
+     */
+    public AtlasConversationsRecyclerView addCellFactories(AtlasCellFactory... cellFactories) {
+        mAdapter.addCellFactories(cellFactories);
         return this;
     }
 }

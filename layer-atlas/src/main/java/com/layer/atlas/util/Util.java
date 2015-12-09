@@ -22,11 +22,6 @@ import android.net.Uri;
 
 import com.layer.atlas.BuildConfig;
 import com.layer.atlas.R;
-import com.layer.atlas.messagetypes.generic.GenericCellFactory;
-import com.layer.atlas.messagetypes.location.LocationCellFactory;
-import com.layer.atlas.messagetypes.singlepartimage.SinglePartImageCellFactory;
-import com.layer.atlas.messagetypes.text.TextCellFactory;
-import com.layer.atlas.messagetypes.threepartimage.ThreePartImageCellFactory;
 import com.layer.atlas.provider.Participant;
 import com.layer.atlas.provider.ParticipantProvider;
 import com.layer.sdk.LayerClient;
@@ -37,7 +32,6 @@ import com.layer.sdk.listeners.LayerAuthenticationListener;
 import com.layer.sdk.listeners.LayerChangeEventListener;
 import com.layer.sdk.listeners.LayerProgressListener;
 import com.layer.sdk.messaging.Conversation;
-import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
 import com.layer.sdk.query.Queryable;
 
@@ -51,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Util {
-    public static final String METADATA_KEY_CONVERSATION_TITLE = "conversationName";
+    private static final String METADATA_KEY_CONVERSATION_TITLE = "conversationName";
     private static final int TIME_HOURS_24 = 24 * 60 * 60 * 1000;
     private static final SimpleDateFormat DAY_OF_WEEK = new SimpleDateFormat("EEE, LLL dd,", Locale.US);
 
@@ -74,23 +68,6 @@ public class Util {
         manager.setPrimaryClip(clipData);
     }
 
-    // TODO: base this on registered types
-    public static String getLastMessageString(Context context, Message message) {
-        if (TextCellFactory.isType(message)) {
-            return TextCellFactory.getMessagePreview(context, message);
-        }
-        if (ThreePartImageCellFactory.isType(message)) {
-            return ThreePartImageCellFactory.getMessagePreview(context, message);
-        }
-        if (LocationCellFactory.isType(message)) {
-            return LocationCellFactory.getMessagePreview(context, message);
-        }
-        if (SinglePartImageCellFactory.isType(message)) {
-            return SinglePartImageCellFactory.getMessagePreview(context, message);
-        }
-        return GenericCellFactory.getPreview(context, message);
-    }
-
     public static String getConversationTitle(LayerClient client, ParticipantProvider provider, Conversation conversation) {
         String metadataTitle = getConversationMetadataTitle(conversation);
         if (metadataTitle != null) return metadataTitle.trim();
@@ -108,12 +85,14 @@ public class Util {
         return sb.toString().trim();
     }
 
+    @SuppressWarnings("unused") // Public API
     public static String getConversationMetadataTitle(Conversation conversation) {
         String metadataTitle = (String) conversation.getMetadata().get(METADATA_KEY_CONVERSATION_TITLE);
         if (metadataTitle != null && !metadataTitle.trim().isEmpty()) return metadataTitle.trim();
         return null;
     }
 
+    @SuppressWarnings("unused") // Public API
     public static void setConversationMetadataTitle(Conversation conversation, String title) {
         if (title == null || title.trim().isEmpty()) {
             conversation.removeMetadataAtKeyPath(METADATA_KEY_CONVERSATION_TITLE);

@@ -21,7 +21,8 @@ public class GenericCellFactory extends AtlasCellFactory<GenericCellFactory.Cell
         super(256 * 1024);
     }
 
-    public static String getPreview(Context context, Message message) {
+    @Override
+    public String getMessagePreview(Context context, Message message) {
         StringBuilder b = new StringBuilder();
         boolean isFirst = true;
         b.append("[");

@@ -54,7 +54,7 @@ public class ThreePartImageCellFactory extends AtlasCellFactory<ThreePartImageCe
 
     public ThreePartImageCellFactory(Activity activity, LayerClient layerClient, Picasso picasso) {
         super(256 * 1024);
-        mActivity = new WeakReference<Activity>(activity);
+        mActivity = new WeakReference<>(activity);
         mLayerClient = layerClient;
         mPicasso = picasso;
         float radius = activity.getResources().getDimension(com.layer.atlas.R.dimen.atlas_message_item_cell_radius);
@@ -62,8 +62,17 @@ public class ThreePartImageCellFactory extends AtlasCellFactory<ThreePartImageCe
     }
 
     @Override
+    public String getMessagePreview(Context context, Message message) {
+        return context.getString(R.string.atlas_message_preview_image);
+    }
+
+    @Override
     public boolean isBindable(Message message) {
-        return ThreePartImageCellFactory.isType(message);
+        List<MessagePart> parts = message.getMessageParts();
+        return parts.size() == 3 &&
+                parts.get(ThreePartImageUtils.PART_INDEX_FULL).getMimeType().startsWith("image/") &&
+                parts.get(ThreePartImageUtils.PART_INDEX_PREVIEW).getMimeType().equals(ThreePartImageUtils.MIME_TYPE_PREVIEW) &&
+                parts.get(ThreePartImageUtils.PART_INDEX_INFO).getMimeType().equals(ThreePartImageUtils.MIME_TYPE_INFO);
     }
 
     @Override
@@ -167,23 +176,6 @@ public class ThreePartImageCellFactory extends AtlasCellFactory<ThreePartImageCe
                 mPicasso.resumeTag(PICASSO_TAG);
                 break;
         }
-    }
-
-
-    //==============================================================================================
-    // Static utilities
-    //==============================================================================================
-
-    public static boolean isType(Message message) {
-        List<MessagePart> parts = message.getMessageParts();
-        return parts.size() == 3 &&
-                parts.get(ThreePartImageUtils.PART_INDEX_FULL).getMimeType().startsWith("image/") &&
-                parts.get(ThreePartImageUtils.PART_INDEX_PREVIEW).getMimeType().equals(ThreePartImageUtils.MIME_TYPE_PREVIEW) &&
-                parts.get(ThreePartImageUtils.PART_INDEX_INFO).getMimeType().equals(ThreePartImageUtils.MIME_TYPE_INFO);
-    }
-
-    public static String getMessagePreview(Context context, Message message) {
-        return context.getString(R.string.atlas_message_preview_image);
     }
 
     public static Info getInfo(Message message) {

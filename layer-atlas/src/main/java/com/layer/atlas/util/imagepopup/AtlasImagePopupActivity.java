@@ -61,6 +61,7 @@ public class AtlasImagePopupActivity extends Activity implements LayerProgressLi
                     break;
                 case ThreePartImageUtils.ORIENTATION_90:
                     mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_270);
+                    //noinspection SuspiciousNameCombination
                     mImageView.setImage(
                             ImageSource.uri(mMessagePartId).dimensions(info.height, info.width),
                             ImageSource.uri(previewId));
@@ -73,6 +74,7 @@ public class AtlasImagePopupActivity extends Activity implements LayerProgressLi
                     break;
                 case ThreePartImageUtils.ORIENTATION_270:
                     mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_90);
+                    //noinspection SuspiciousNameCombination
                     mImageView.setImage(
                             ImageSource.uri(mMessagePartId).dimensions(info.height, info.width),
                             ImageSource.uri(previewId));
@@ -98,9 +100,13 @@ public class AtlasImagePopupActivity extends Activity implements LayerProgressLi
     }
 
     public static void init(LayerClient layerClient) {
+        init(layerClient, null);
+    }
+
+    public static void init(LayerClient layerClient, MessagePartRegionDecoder.MessagePartContent messagePartContent) {
         sLayerClient = layerClient;
         MessagePartDecoder.init(layerClient);
-        MessagePartRegionDecoder.init(layerClient);
+        MessagePartRegionDecoder.init(layerClient, messagePartContent);
     }
 
 

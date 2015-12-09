@@ -14,16 +14,45 @@ import com.layer.atlas.util.Util;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.MessagePart;
 
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 public class MessagePartRegionDecoder implements ImageRegionDecoder {
+    private static final MessagePartContent DEFAULT_MESSAGE_PART_CONTENT = new MessagePartContent() {
+        @Override
+        public InputStream getContentInputStream(MessagePart messagePart) {
+            return messagePart.getDataStream();
+        }
+
+        @Override
+        public boolean downloadContent(MessagePart messagePart) {
+            return true;
+        }
+    };
+
     private final Object mLock = new Object();
     private BitmapRegionDecoder mDecoder;
     private static LayerClient sLayerClient;
+    private static MessagePartContent sMessagePartContent;
     private MessagePart mMessagePart;
 
     public static void init(LayerClient layerClient) {
+        init(layerClient, null);
+    }
+
+    public interface MessagePartContent {
+        InputStream getContentInputStream(MessagePart messagePart);
+
+        boolean downloadContent(MessagePart messagePart);
+    }
+
+    public static void init(LayerClient layerClient, MessagePartContent messagePartContent) {
         sLayerClient = layerClient;
+        if (messagePartContent == null) {
+            sMessagePartContent = DEFAULT_MESSAGE_PART_CONTENT;
+        } else {
+            sMessagePartContent = messagePartContent;
+        }
     }
 
     @Override
@@ -43,7 +72,7 @@ public class MessagePartRegionDecoder implements ImageRegionDecoder {
         }
 
         mMessagePart = part;
-        if (!Util.downloadMessagePart(sLayerClient, mMessagePart, 3, TimeUnit.MINUTES)) {
+        if (sMessagePartContent.downloadContent(mMessagePart) && !Util.downloadMessagePart(sLayerClient, mMessagePart, 3, TimeUnit.MINUTES)) {
             if (Log.isLoggable(Log.ERROR)) {
                 Log.e("Timed out while downloading: " + messagePartId);
             }
@@ -51,7 +80,7 @@ public class MessagePartRegionDecoder implements ImageRegionDecoder {
         }
 
         synchronized (mLock) {
-            mDecoder = BitmapRegionDecoder.newInstance(mMessagePart.getDataStream(), false);
+            mDecoder = BitmapRegionDecoder.newInstance(sMessagePartContent.getContentInputStream(mMessagePart), false);
             return new Point(mDecoder.getWidth(), mDecoder.getHeight());
         }
     }

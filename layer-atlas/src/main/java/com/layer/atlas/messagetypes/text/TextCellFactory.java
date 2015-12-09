@@ -23,30 +23,27 @@ public class TextCellFactory extends AtlasCellFactory<TextCellFactory.CellHolder
         super(256 * 1024);
     }
 
-    public static boolean isType(Message message) {
-        return message.getMessageParts().get(0).getMimeType().equals(MIME_TYPE);
-    }
-
-    public static String getMessagePreview(Context context, Message message) {
+    @Override
+    public String getMessagePreview(Context context, Message message) {
         return new String(message.getMessageParts().get(0).getData());
     }
 
     @Override
     public boolean isBindable(Message message) {
-        return TextCellFactory.isType(message);
+        return message.getMessageParts().get(0).getMimeType().equals(MIME_TYPE);
     }
 
     @Override
     public CellHolder createCellHolder(ViewGroup cellView, boolean isMe, LayoutInflater layoutInflater) {
         Context context = cellView.getContext();
 
-        View v = layoutInflater.inflate(R.layout.atlas_message_item_cell_text, cellView, true);
-        v.setBackgroundResource(isMe ? R.drawable.atlas_message_item_cell_me : R.drawable.atlas_message_item_cell_them);
+        View view = layoutInflater.inflate(R.layout.atlas_message_item_cell_text, cellView, true);
+        view.setBackgroundResource(isMe ? R.drawable.atlas_message_item_cell_me : R.drawable.atlas_message_item_cell_them);
 
-        TextView t = (TextView) v.findViewById(R.id.cell_text);
-        t.setTextColor(context.getResources().getColor(isMe ? R.color.atlas_cell_me_text : R.color.atlas_cell_them_text));
-        t.setLinkTextColor(context.getResources().getColor(isMe ? R.color.atlas_cell_me_text : R.color.atlas_cell_them_text));
-        return new CellHolder(v);
+        TextView textView = (TextView) view.findViewById(R.id.cell_text);
+        textView.setTextColor(context.getResources().getColor(isMe ? R.color.atlas_cell_me_text : R.color.atlas_cell_them_text));
+        textView.setLinkTextColor(context.getResources().getColor(isMe ? R.color.atlas_cell_me_text : R.color.atlas_cell_them_text));
+        return new CellHolder(view);
     }
 
     @Override

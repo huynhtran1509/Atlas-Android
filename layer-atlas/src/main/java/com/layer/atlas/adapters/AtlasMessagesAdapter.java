@@ -73,18 +73,18 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
 
     // Cells
     protected int mViewTypeCount = VIEW_TYPE_FOOTER;
-    protected final Set<AtlasCellFactory> mCellFactories = new LinkedHashSet<AtlasCellFactory>();
-    protected final Map<Integer, CellType> mCellTypesByViewType = new HashMap<Integer, CellType>();
-    protected final Map<AtlasCellFactory, Integer> mMyViewTypesByCell = new HashMap<AtlasCellFactory, Integer>();
-    protected final Map<AtlasCellFactory, Integer> mTheirViewTypesByCell = new HashMap<AtlasCellFactory, Integer>();
+    protected final Set<AtlasCellFactory> mCellFactories = new LinkedHashSet<>();
+    protected final Map<Integer, CellType> mCellTypesByViewType = new HashMap<>();
+    protected final Map<AtlasCellFactory, Integer> mMyViewTypesByCell = new HashMap<>();
+    protected final Map<AtlasCellFactory, Integer> mTheirViewTypesByCell = new HashMap<>();
 
     // Dates and Clustering
-    private final Map<Uri, Cluster> mClusterCache = new HashMap<Uri, Cluster>();
+    private final Map<Uri, Cluster> mClusterCache = new HashMap<>();
     private final DateFormat mDateFormat;
     private final DateFormat mTimeFormat;
 
     // Read and delivery receipts
-    private Map<Message.RecipientStatus, MessagePosition> mReceiptMap = new HashMap<Message.RecipientStatus, MessagePosition>();
+    private Map<Message.RecipientStatus, MessagePosition> mReceiptMap = new HashMap<>();
 
     private View mFooterView;
     private int mFooterPosition = 0;
@@ -151,7 +151,7 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
         } else if (!wasNull && isNull) {
             // Delete
             notifyItemRemoved(mFooterPosition);
-        } else if (!wasNull && !isNull) {
+        } else if (!wasNull) {
             // Change
             notifyItemChanged(mFooterPosition);
         }

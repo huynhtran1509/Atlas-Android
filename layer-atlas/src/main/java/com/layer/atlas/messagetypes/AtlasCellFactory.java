@@ -1,5 +1,6 @@
 package com.layer.atlas.messagetypes;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.LruCache;
 import android.view.LayoutInflater;
@@ -31,6 +32,14 @@ public abstract class AtlasCellFactory<Tholder extends AtlasCellFactory.CellHold
             }
         };
     }
+
+    /**
+     * Returns the preview for the given Message.
+     * @param context Context used to possibly get resources.
+     * @param message Message used to get the preview.
+     * @return The preview of the Message passed.
+     */
+    public abstract String getMessagePreview(Context context, Message message);
 
     /**
      * Returns `true` if this CellFactory can create and bind a CellHolder for the given Message, or

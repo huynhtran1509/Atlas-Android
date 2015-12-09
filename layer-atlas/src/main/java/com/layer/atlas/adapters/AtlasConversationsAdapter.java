@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.layer.atlas.AtlasAvatar;
 import com.layer.atlas.R;
+import com.layer.atlas.messagetypes.AtlasCellFactory;
 import com.layer.atlas.provider.ParticipantProvider;
 import com.layer.atlas.util.Util;
 import com.layer.sdk.LayerClient;
@@ -23,7 +24,10 @@ import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConversationsAdapter.ViewHolder> implements AtlasBaseAdapter<Conversation>, RecyclerViewController.Callback {
     protected final LayerClient mLayerClient;
@@ -38,6 +42,8 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
 
     private final DateFormat mDateFormat;
     private final DateFormat mTimeFormat;
+
+    protected final Set<AtlasCellFactory> mCellFactories = new LinkedHashSet<>();
 
     public AtlasConversationsAdapter(Context context, LayerClient client, ParticipantProvider participantProvider, Picasso picasso) {
         this(context, client, participantProvider, picasso, null);
@@ -158,7 +164,7 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
             viewHolder.mTimeView.setText(null);
         } else {
             viewHolder.mMessageView.setTypeface(null, Typeface.NORMAL);
-            viewHolder.mMessageView.setText(Util.getLastMessageString(context, lastMessage));
+            viewHolder.mMessageView.setText(getLastMessageString(context, lastMessage));
             viewHolder.mTitleView.setTypeface(null, (conversation.getTotalUnreadMessageCount() > 0) ? Typeface.BOLD : Typeface.NORMAL);
             if (lastMessage.getSentAt() == null) {
                 viewHolder.mTimeView.setText(null);
@@ -166,6 +172,15 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
                 viewHolder.mTimeView.setText(Util.formatTime(context, lastMessage.getSentAt(), mTimeFormat, mDateFormat));
             }
         }
+    }
+
+    private String getLastMessageString(Context context, Message message) {
+        for (AtlasCellFactory atlasCellFactory : mCellFactories) {
+            if (atlasCellFactory.isBindable(message)) {
+                return atlasCellFactory.getMessagePreview(context, message);
+            }
+        }
+        return null;
     }
 
     @Override
@@ -191,6 +206,20 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
     @Override
     public Conversation getItem(RecyclerView.ViewHolder viewHolder) {
         return ((ViewHolder) viewHolder).getConversation();
+    }
+
+
+    /**
+     * Registers one or more CellFactories for the AtlasConversationsAdapter to manage.
+     * CellFactories know which Messages they can render, and handle View caching, creation,
+     * and binding.
+     *
+     * @param cellFactories Cells to register.
+     * @return This AtlasConversationsAdapter.
+     */
+    public AtlasConversationsAdapter addCellFactories(AtlasCellFactory... cellFactories) {
+        Collections.addAll(mCellFactories, cellFactories);
+        return this;
     }
 
 

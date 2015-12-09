@@ -47,17 +47,14 @@ public class LocationCellFactory extends AtlasCellFactory<LocationCellFactory.Ce
         mTransform = new RoundedTransform(radius);
     }
 
-    public static boolean isType(Message message) {
-        return message.getMessageParts().get(0).getMimeType().equals(MIME_TYPE);
-    }
-
-    public static String getMessagePreview(Context context, Message message) {
+    @Override
+    public String getMessagePreview(Context context, Message message) {
         return context.getString(R.string.atlas_message_preview_location);
     }
 
     @Override
     public boolean isBindable(Message message) {
-        return LocationCellFactory.isType(message);
+        return message.getMessageParts().get(0).getMimeType().equals(MIME_TYPE);
     }
 
     @Override
