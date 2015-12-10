@@ -16,10 +16,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
+              android:background="@color/atlas_attachment_background"
               android:orientation="vertical"
-              android:paddingBottom="@dimen/atlas_padding_narrow"
+              android:paddingBottom="@dimen/atlas_attachment_popup_padding_bottom"
               android:paddingLeft="@dimen/atlas_padding_normal"
               android:paddingRight="@dimen/atlas_padding_normal"
-              android:paddingTop="@dimen/atlas_padding_narrow"
+              android:paddingTop="@dimen/atlas_attachment_popup_padding_top"
     >
 </LinearLayout>

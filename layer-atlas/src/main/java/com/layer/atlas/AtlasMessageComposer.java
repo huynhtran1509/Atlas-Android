@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -276,6 +277,7 @@ public class AtlasMessageComposer extends FrameLayout {
         });
         if (sender.getIcon() != null) {
             ImageView iconView = ((ImageView) menuItem.findViewById(R.id.icon));
+            iconView.setColorFilter(getResources().getColor(R.color.atlas_cell_attachment_title), PorterDuff.Mode.MULTIPLY);
             iconView.setImageResource(sender.getIcon());
             iconView.setVisibility(VISIBLE);
             Drawable d = DrawableCompat.wrap(iconView.getDrawable());

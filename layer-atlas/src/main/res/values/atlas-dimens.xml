@@ -46,6 +46,9 @@
     <dimen name="atlas_text_size_message_item_metadata">12sp</dimen>
     <dimen name="atlas_text_size_chip">13sp</dimen>
 
+    <dimen name="atlas_attachment_popup_padding_bottom">@dimen/atlas_padding_narrow</dimen>
+    <dimen name="atlas_attachment_popup_padding_top">@dimen/atlas_padding_narrow</dimen>
+
 
     <!-- ####################################################################################### -->
     <!-- # Message Items and Cells                                                             # -->
