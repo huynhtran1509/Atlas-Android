@@ -36,6 +36,7 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
     private final RecyclerViewController<Conversation> mQueryController;
     private final LayoutInflater mInflater;
     private long mInitialHistory = 0;
+    private final RecyclerViewController.Callback mCallback;
 
     private OnConversationClickListener mConversationClickListener;
     private ViewHolder.OnClickListener mViewHolderClickListener;
@@ -45,11 +46,11 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
 
     protected final Set<AtlasCellFactory> mCellFactories = new LinkedHashSet<>();
 
-    public AtlasConversationsAdapter(Context context, LayerClient client, ParticipantProvider participantProvider, Picasso picasso) {
-        this(context, client, participantProvider, picasso, null);
+    public AtlasConversationsAdapter(Context context, LayerClient client, ParticipantProvider participantProvider, Picasso picasso, RecyclerViewController.Callback callback) {
+        this(context, client, participantProvider, picasso, callback, null);
     }
 
-    public AtlasConversationsAdapter(Context context, LayerClient client, ParticipantProvider participantProvider, Picasso picasso, Collection<String> updateAttributes) {
+    public AtlasConversationsAdapter(Context context, LayerClient client, ParticipantProvider participantProvider, Picasso picasso, RecyclerViewController.Callback callback, Collection<String> updateAttributes) {
         Query<Conversation> query = Query.builder(Conversation.class)
                 /* Only show conversations we're still a member of */
                 .predicate(new Predicate(Conversation.Property.PARTICIPANT_COUNT, Predicate.Operator.GREATER_THAN, 1))
@@ -61,6 +62,7 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
         mLayerClient = client;
         mParticipantProvider = participantProvider;
         mPicasso = picasso;
+        mCallback = callback;
         mInflater = LayoutInflater.from(context);
         mDateFormat = android.text.format.DateFormat.getDateFormat(context);
         mTimeFormat = android.text.format.DateFormat.getTimeFormat(context);
@@ -229,44 +231,68 @@ public class AtlasConversationsAdapter extends RecyclerView.Adapter<AtlasConvers
 
     @Override
     public void onQueryDataSetChanged(RecyclerViewController controller) {
+        if (mCallback != null) {
+            mCallback.onQueryDataSetChanged(controller);
+        }
         syncInitialMessages(0, getItemCount());
         notifyDataSetChanged();
     }
 
     @Override
     public void onQueryItemChanged(RecyclerViewController controller, int position) {
+        if (mCallback != null) {
+            mCallback.onQueryItemChanged(controller, position);
+        }
         notifyItemChanged(position);
     }
 
     @Override
     public void onQueryItemRangeChanged(RecyclerViewController controller, int positionStart, int itemCount) {
+        if (mCallback != null) {
+            mCallback.onQueryItemRangeChanged(controller, positionStart, itemCount);
+        }
         notifyItemRangeChanged(positionStart, itemCount);
     }
 
     @Override
     public void onQueryItemInserted(RecyclerViewController controller, int position) {
+        if (mCallback != null) {
+            mCallback.onQueryItemInserted(controller, position);
+        }
         syncInitialMessages(position, 1);
         notifyItemInserted(position);
     }
 
     @Override
     public void onQueryItemRangeInserted(RecyclerViewController controller, int positionStart, int itemCount) {
+        if (mCallback != null) {
+            mCallback.onQueryItemRangeInserted(controller, positionStart, itemCount);
+        }
         syncInitialMessages(positionStart, itemCount);
         notifyItemRangeInserted(positionStart, itemCount);
     }
 
     @Override
     public void onQueryItemRemoved(RecyclerViewController controller, int position) {
+        if (mCallback != null) {
+            mCallback.onQueryItemRemoved(controller, position);
+        }
         notifyItemRemoved(position);
     }
 
     @Override
     public void onQueryItemRangeRemoved(RecyclerViewController controller, int positionStart, int itemCount) {
+        if (mCallback != null) {
+            mCallback.onQueryItemRangeRemoved(controller, positionStart, itemCount);
+        }
         notifyItemRangeRemoved(positionStart, itemCount);
     }
 
     @Override
     public void onQueryItemMoved(RecyclerViewController controller, int fromPosition, int toPosition) {
+        if (mCallback != null) {
+            mCallback.onQueryItemMoved(controller, fromPosition, toPosition);
+        }
         notifyItemMoved(fromPosition, toPosition);
     }
 
