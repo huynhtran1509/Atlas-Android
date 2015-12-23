@@ -1,6 +1,7 @@
 package com.layer.atlas.messagetypes.generic;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,8 @@ import com.layer.atlas.provider.ParticipantProvider;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
+
+import rx.Single;
 
 /**
  * Mime handles all MIME Types by simply displaying all MessagePart MIME Types as text.
@@ -53,7 +56,7 @@ public class GenericCellFactory extends AtlasCellFactory<GenericCellFactory.Cell
     }
 
     @Override
-    public ParsedContent parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
+    public Single<ParsedContent> parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
         StringBuilder builder = new StringBuilder();
         int i = 0;
         for (MessagePart part : message.getMessageParts()) {
@@ -63,12 +66,13 @@ public class GenericCellFactory extends AtlasCellFactory<GenericCellFactory.Cell
                     .append(part.getMimeType()).append("`");
             i++;
         }
-        return new ParsedContent(builder.toString());
+        ParsedContent parsedContent = new ParsedContent(builder.toString());
+        return Single.just(parsedContent);
     }
 
     @Override
-    public void bindCellHolder(CellHolder cellHolder, ParsedContent string, Message message, CellHolderSpecs specs) {
-        cellHolder.mTextView.setText(string.toString());
+    public void bindCellHolder(CellHolder cellHolder, @Nullable ParsedContent string, Message message, CellHolderSpecs specs) {
+        cellHolder.mTextView.setText(string == null ? null : string.toString());
     }
 
     public class CellHolder extends AtlasCellFactory.CellHolder {

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -27,6 +28,8 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
 import java.lang.ref.WeakReference;
+
+import rx.Single;
 
 /**
  * BasicImage handles non-ThreePartImage images.  It relies on the ThreePartImage RequestHandler and does not handle image rotation.
@@ -72,23 +75,25 @@ public class SinglePartImageCellFactory extends AtlasCellFactory<SinglePartImage
     }
 
     @Override
-    public void bindCellHolder(final CellHolder cellHolder, PartId index, Message message, CellHolderSpecs specs) {
+    public void bindCellHolder(final CellHolder cellHolder, @Nullable PartId index, Message message, CellHolderSpecs specs) {
         cellHolder.mImageView.setTag(index);
         cellHolder.mImageView.setOnClickListener(this);
         cellHolder.mProgressBar.show();
-        mPicasso.load(index.mId).tag(PICASSO_TAG).placeholder(PLACEHOLDER)
-                .centerInside().resize(specs.maxWidth, specs.maxHeight).onlyScaleDown()
-                .transform(mTransform).into(cellHolder.mImageView, new Callback() {
-            @Override
-            public void onSuccess() {
-                cellHolder.mProgressBar.hide();
-            }
+        if (index != null) {
+            mPicasso.load(index.mId).tag(PICASSO_TAG).placeholder(PLACEHOLDER)
+                    .centerInside().resize(specs.maxWidth, specs.maxHeight).onlyScaleDown()
+                    .transform(mTransform).into(cellHolder.mImageView, new Callback() {
+                @Override
+                public void onSuccess() {
+                    cellHolder.mProgressBar.hide();
+                }
 
-            @Override
-            public void onError() {
-                cellHolder.mProgressBar.hide();
-            }
-        });
+                @Override
+                public void onError() {
+                    cellHolder.mProgressBar.hide();
+                }
+            });
+        }
     }
 
     @Override
@@ -124,11 +129,14 @@ public class SinglePartImageCellFactory extends AtlasCellFactory<SinglePartImage
     }
 
     @Override
-    public PartId parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
+    public Single<PartId> parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
         for (MessagePart part : message.getMessageParts()) {
-            if (isMimeType(part.getMimeType())) return new PartId(part.getId());
+            if (isMimeType(part.getMimeType())) {
+                PartId partId = new PartId(part.getId());
+                return Single.just(partId);
+            }
         }
-        return null;
+        return Single.just(null);
     }
 
     public Picasso getPicasso() {

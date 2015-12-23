@@ -18,6 +18,7 @@ import com.layer.atlas.R;
 import com.layer.atlas.messagetypes.AtlasCellFactory;
 import com.layer.atlas.provider.Participant;
 import com.layer.atlas.provider.ParticipantProvider;
+import com.layer.atlas.util.Log;
 import com.layer.atlas.util.Util;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Actor;
@@ -34,6 +35,9 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
+import rx.SingleSubscriber;
+import rx.functions.Action1;
 
 /**
  * AtlasMessagesAdapter drives an AtlasMessagesList.  The AtlasMessagesAdapter itself handles
@@ -73,8 +77,8 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
 
     // Cells
     protected int mViewTypeCount = VIEW_TYPE_FOOTER;
-    protected final Set<AtlasCellFactory> mCellFactories = new LinkedHashSet<>();
-    protected final Map<Integer, CellType> mCellTypesByViewType = new HashMap<>();
+    protected final Set<AtlasCellFactory<?, ?>> mCellFactories = new LinkedHashSet<>();
+    protected final Map<Integer, CellType<?, ?>> mCellTypesByViewType = new HashMap<>();
     protected final Map<AtlasCellFactory, Integer> mMyViewTypesByCell = new HashMap<>();
     protected final Map<AtlasCellFactory, Integer> mTheirViewTypesByCell = new HashMap<>();
 
@@ -105,9 +109,20 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
         mQueryController.setPreProcessCallback(new ListViewController.PreProcessCallback<Message>() {
             @Override
             public void onCache(ListViewController listViewController, Message message) {
-                for (AtlasCellFactory factory : mCellFactories) {
+                for (AtlasCellFactory<?, ?> factory : mCellFactories) {
                     if (factory.isBindable(message)) {
-                        factory.getParsedContent(mLayerClient, mParticipantProvider, message);
+                        factory.getParsedContent(mLayerClient, mParticipantProvider, message)
+                                .subscribe(new SingleSubscriber<AtlasCellFactory.ParsedContent>() {
+                                    @Override
+                                    public void onSuccess(AtlasCellFactory.ParsedContent value) {
+
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable error) {
+                                        Log.e("Error retrieving parsed content", error);
+                                    }
+                                });
                         break;
                     }
                 }
@@ -191,24 +206,24 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
      * @param cellFactories Cells to register.
      * @return This AtlasMessagesAdapter.
      */
-    public AtlasMessagesAdapter addCellFactories(AtlasCellFactory... cellFactories) {
-        for (AtlasCellFactory CellFactory : cellFactories) {
-            mCellFactories.add(CellFactory);
+    public AtlasMessagesAdapter addCellFactories(AtlasCellFactory<?, ?>... cellFactories) {
+        for (AtlasCellFactory<?, ?> cellFactory : cellFactories) {
+            mCellFactories.add(cellFactory);
 
             mViewTypeCount++;
-            CellType me = new CellType(true, CellFactory);
+            CellType<?, ?> me = new CellType<>(true, cellFactory);
             mCellTypesByViewType.put(mViewTypeCount, me);
-            mMyViewTypesByCell.put(CellFactory, mViewTypeCount);
+            mMyViewTypesByCell.put(cellFactory, mViewTypeCount);
 
             mViewTypeCount++;
-            CellType notMe = new CellType(false, CellFactory);
+            CellType<?, ?> notMe = new CellType<>(false, cellFactory);
             mCellTypesByViewType.put(mViewTypeCount, notMe);
-            mTheirViewTypesByCell.put(CellFactory, mViewTypeCount);
+            mTheirViewTypesByCell.put(cellFactory, mViewTypeCount);
         }
         return this;
     }
 
-    public Set<AtlasCellFactory> getCellFactories() {
+    public Set<AtlasCellFactory<?, ?>> getCellFactories() {
         return mCellFactories;
     }
 
@@ -217,7 +232,7 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
         if (mFooterView != null && position == mFooterPosition) return VIEW_TYPE_FOOTER;
         Message message = getItem(position);
         boolean isMe = mLayerClient.getAuthenticatedUserId().equals(message.getSender().getUserId());
-        for (AtlasCellFactory factory : mCellFactories) {
+        for (AtlasCellFactory<?, ?> factory : mCellFactories) {
             if (!factory.isBindable(message)) continue;
             return isMe ? mMyViewTypesByCell.get(factory) : mTheirViewTypesByCell.get(factory);
         }
@@ -230,12 +245,9 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
             return new ViewHolder(mLayoutInflater.inflate(ViewHolder.RESOURCE_ID_FOOTER, parent, false));
         }
 
-        CellType cellType = mCellTypesByViewType.get(viewType);
+        CellType<?, ?> cellType = mCellTypesByViewType.get(viewType);
         int rootResId = cellType.mMe ? CellViewHolder.RESOURCE_ID_ME : CellViewHolder.RESOURCE_ID_THEM;
-        CellViewHolder rootViewHolder = new CellViewHolder(mLayoutInflater.inflate(rootResId, parent, false), mParticipantProvider, mPicasso);
-        rootViewHolder.mCellHolder = cellType.mCellFactory.createCellHolder(rootViewHolder.mCell, cellType.mMe, mLayoutInflater);
-        rootViewHolder.mCellHolderSpecs = new AtlasCellFactory.CellHolderSpecs();
-        return rootViewHolder;
+        return new CellViewHolder<>(mLayoutInflater.inflate(rootResId, parent, false), mParticipantProvider, mPicasso, cellType, mLayoutInflater);
     }
 
     @Override
@@ -258,10 +270,11 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
         viewHolder.mRoot.addView(mFooterView);
     }
 
-    public void bindCellViewHolder(CellViewHolder viewHolder, int position) {
-        Message message = getItem(position);
+    public <Tholder extends AtlasCellFactory.CellHolder, Tcache extends AtlasCellFactory.ParsedContent> void bindCellViewHolder(final CellViewHolder<Tholder> viewHolder, int position) {
+        final Message message = getItem(position);
         viewHolder.mMessage = message;
-        CellType cellType = mCellTypesByViewType.get(viewHolder.getItemViewType());
+        //noinspection unchecked
+        final CellType<Tholder, Tcache> cellType = (CellType<Tholder, Tcache>) mCellTypesByViewType.get(viewHolder.getItemViewType());
         boolean oneOnOne = message.getConversation().getParticipants().size() == 2;
 
         // Clustering and dates
@@ -307,13 +320,15 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
             }
 
             // Unsent and sent
-            if (!message.isSent()) {
-                viewHolder.mCell.setAlpha(0.5f);
-            } else {
+            if (message.isSent()) {
                 viewHolder.mCell.setAlpha(1.0f);
+            } else {
+                viewHolder.mCell.setAlpha(0.5f);
             }
         } else {
-            message.markAsRead();
+            if (cellType.mCellFactory.shouldMarkAsReadOnBind()) {
+                message.markAsRead();
+            }
             // Sender name, only for first message in cluster
             if (!oneOnOne && (cluster.mClusterWithPrevious == null || cluster.mClusterWithPrevious == ClusterType.NEW_SENDER)) {
                 Actor sender = message.getSender();
@@ -343,8 +358,7 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
         }
 
         // CellHolder
-        AtlasCellFactory.CellHolder cellHolder = viewHolder.mCellHolder;
-        cellHolder.setMessage(message);
+        viewHolder.mCellHolder.setMessage(message);
 
         // Cell dimensions
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) viewHolder.mCell.getLayoutParams();
@@ -361,7 +375,24 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
         viewHolder.mCellHolderSpecs.position = position;
         viewHolder.mCellHolderSpecs.maxWidth = maxWidth;
         viewHolder.mCellHolderSpecs.maxHeight = maxHeight;
-        cellType.mCellFactory.bindCellHolder(cellHolder, cellType.mCellFactory.getParsedContent(mLayerClient, mParticipantProvider, message), message, viewHolder.mCellHolderSpecs);
+
+        cellType.mCellFactory.bindCellHolder(viewHolder.mCellHolder, null, message, viewHolder.mCellHolderSpecs);
+        cellType.mCellFactory.getParsedContent(mLayerClient, mParticipantProvider, message)
+            .subscribe(
+                    new Action1<Tcache>() {
+                        @Override
+                        public void call(Tcache parsedContent) {
+                            cellType.mCellFactory.bindCellHolder(viewHolder.mCellHolder, parsedContent, message, viewHolder.mCellHolderSpecs);
+                        }
+                    },
+                    new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            Log.e("Error trying to fetch parsed content", throwable);
+                        }
+                    }
+            );
+
     }
 
     @Override
@@ -599,7 +630,7 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
         }
     }
 
-    static class CellViewHolder extends ViewHolder {
+    static class CellViewHolder<Tholder extends AtlasCellFactory.CellHolder> extends ViewHolder {
         public final static int RESOURCE_ID_ME = R.layout.atlas_message_item_me;
         public final static int RESOURCE_ID_THEM = R.layout.atlas_message_item_them;
 
@@ -616,10 +647,10 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
         protected TextView mReceipt;
 
         // Cell
-        protected AtlasCellFactory.CellHolder mCellHolder;
+        protected Tholder mCellHolder;
         protected AtlasCellFactory.CellHolderSpecs mCellHolderSpecs;
 
-        public CellViewHolder(View itemView, ParticipantProvider participantProvider, Picasso picasso) {
+        public CellViewHolder(View itemView, ParticipantProvider participantProvider, Picasso picasso, CellType<Tholder, ?> cellType, LayoutInflater layoutInflater) {
             super(itemView);
             mUserName = (TextView) itemView.findViewById(R.id.sender);
             mTimeGroup = itemView.findViewById(R.id.time_group);
@@ -631,6 +662,9 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
 
             mAvatar = ((AtlasAvatar) itemView.findViewById(R.id.avatar));
             if (mAvatar != null) mAvatar.init(participantProvider, picasso);
+
+            mCellHolder = cellType.mCellFactory.createCellHolder(mCell, cellType.mMe, layoutInflater);
+            mCellHolderSpecs = new AtlasCellFactory.CellHolderSpecs();
         }
     }
 
@@ -676,11 +710,11 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
         }
     }
 
-    private static class CellType {
+    private static class CellType<Tholder extends AtlasCellFactory.CellHolder, Tcache extends AtlasCellFactory.ParsedContent> {
         protected final boolean mMe;
-        protected final AtlasCellFactory mCellFactory;
+        protected final AtlasCellFactory<Tholder, Tcache> mCellFactory;
 
-        public CellType(boolean me, AtlasCellFactory CellFactory) {
+        public CellType(boolean me, AtlasCellFactory<Tholder, Tcache> CellFactory) {
             mMe = me;
             mCellFactory = CellFactory;
         }
@@ -690,7 +724,8 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
-            CellType cellType = (CellType) o;
+            //noinspection unchecked
+            CellType<Tholder, Tcache> cellType = (CellType<Tholder, Tcache>) o;
 
             if (mMe != cellType.mMe) return false;
             return mCellFactory.equals(cellType.mCellFactory);

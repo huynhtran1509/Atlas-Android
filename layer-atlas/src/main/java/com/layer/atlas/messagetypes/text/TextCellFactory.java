@@ -1,6 +1,7 @@
 package com.layer.atlas.messagetypes.text;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,8 @@ import com.layer.atlas.util.Util;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Actor;
 import com.layer.sdk.messaging.Message;
+
+import rx.Single;
 
 public class TextCellFactory extends AtlasCellFactory<TextCellFactory.CellHolder, TextCellFactory.TextInfo> implements View.OnLongClickListener {
     public final static String MIME_TYPE = "text/plain";
@@ -47,7 +50,7 @@ public class TextCellFactory extends AtlasCellFactory<TextCellFactory.CellHolder
     }
 
     @Override
-    public TextInfo parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
+    public Single<TextInfo> parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
         String text = new String(message.getMessageParts().get(0).getData());
         String name;
         Actor sender = message.getSender();
@@ -57,12 +60,13 @@ public class TextCellFactory extends AtlasCellFactory<TextCellFactory.CellHolder
             Participant participant = participantProvider.getParticipant(sender.getUserId());
             name = participant == null ? "" : (participant.getName() + ": ");
         }
-        return new TextInfo(text, name);
+        TextInfo textInfo = new TextInfo(text, name);
+        return Single.just(textInfo);
     }
 
     @Override
-    public void bindCellHolder(CellHolder cellHolder, final TextInfo parsed, Message message, CellHolderSpecs specs) {
-        cellHolder.mTextView.setText(parsed.getString());
+    public void bindCellHolder(CellHolder cellHolder, @Nullable final TextInfo parsed, Message message, CellHolderSpecs specs) {
+        cellHolder.mTextView.setText(parsed == null ? null : parsed.getString());
         cellHolder.mTextView.setTag(parsed);
         cellHolder.mTextView.setOnLongClickListener(this);
     }

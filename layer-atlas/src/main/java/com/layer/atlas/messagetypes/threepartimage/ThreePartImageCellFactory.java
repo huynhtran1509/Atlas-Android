@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -36,6 +37,8 @@ import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+
+import rx.Single;
 
 /**
  * ThreePartImage handles image Messages with three parts: full image, preview image, and
@@ -81,70 +84,78 @@ public class ThreePartImageCellFactory extends AtlasCellFactory<ThreePartImageCe
     }
 
     @Override
-    public Info parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
-        return getInfo(message);
+    public Single<Info> parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
+        Info info = getInfo(message);
+        return Single.just(info);
     }
 
     @Override
-    public void bindCellHolder(final CellHolder cellHolder, final Info info, final Message message, CellHolderSpecs specs) {
+    public void bindCellHolder(final CellHolder cellHolder, @Nullable final Info info, final Message message, CellHolderSpecs specs) {
         cellHolder.mImageView.setTag(info);
         cellHolder.mImageView.setOnClickListener(this);
         MessagePart preview = ThreePartImageUtils.getPreviewPart(message);
 
         // Info width and height are the rotated width and height, though the content is not pre-rotated.
-        int[] cellDims = Util.scaleDownInside(info.width, info.height, specs.maxWidth, specs.maxHeight);
-        ViewGroup.LayoutParams params = cellHolder.mImageView.getLayoutParams();
-        params.width = cellDims[0];
-        params.height = cellDims[1];
-        cellHolder.mProgressBar.show();
-        RequestCreator creator = mPicasso.load(preview.getId()).tag(PICASSO_TAG).placeholder(PLACEHOLDER);
-        switch (info.orientation) {
-            case ThreePartImageUtils.ORIENTATION_0:
-                creator.resize(cellDims[0], cellDims[1]);
-                break;
-            case ThreePartImageUtils.ORIENTATION_90:
-                creator.resize(cellDims[1], cellDims[0]).rotate(-90);
-                break;
-            case ThreePartImageUtils.ORIENTATION_180:
-                creator.resize(cellDims[0], cellDims[1]).rotate(180);
-                break;
-            default:
-                creator.resize(cellDims[1], cellDims[0]).rotate(90);
-                break;
+        if (info == null) {
+            ViewGroup.LayoutParams params = cellHolder.mImageView.getLayoutParams();
+            params.width = specs.maxWidth;
+            params.height = specs.maxHeight;
+            cellHolder.mProgressBar.show();
+        } else {
+            int[] cellDims = Util.scaleDownInside(info.width, info.height, specs.maxWidth, specs.maxHeight);
+            ViewGroup.LayoutParams params = cellHolder.mImageView.getLayoutParams();
+            params.width = cellDims[0];
+            params.height = cellDims[1];
+            cellHolder.mProgressBar.show();
+            RequestCreator creator = mPicasso.load(preview.getId()).tag(PICASSO_TAG).placeholder(PLACEHOLDER);
+            switch (info.orientation) {
+                case ThreePartImageUtils.ORIENTATION_0:
+                    creator.resize(cellDims[0], cellDims[1]);
+                    break;
+                case ThreePartImageUtils.ORIENTATION_90:
+                    creator.resize(cellDims[1], cellDims[0]).rotate(-90);
+                    break;
+                case ThreePartImageUtils.ORIENTATION_180:
+                    creator.resize(cellDims[0], cellDims[1]).rotate(180);
+                    break;
+                default:
+                    creator.resize(cellDims[1], cellDims[0]).rotate(90);
+                    break;
+            }
+            creator.transform(mTransform).into(cellHolder.mImageView, new Callback() {
+                @Override
+                public void onSuccess() {
+                    cellHolder.mProgressBar.hide();
+                }
+
+                @Override
+                public void onError() {
+                    cellHolder.mProgressBar.hide();
+                }
+            });
+
+            cellHolder.mImageView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    MessagePart full = ThreePartImageUtils.getFullPart(message);
+                    MessagePart preview = ThreePartImageUtils.getPreviewPart(message);
+                    MessagePart info = ThreePartImageUtils.getInfoPart(message);
+
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inJustDecodeBounds = true;
+
+                    BitmapFactory.decodeStream(full.getDataStream(), null, options);
+                    Log.v("Full size: " + options.outWidth + "x" + options.outHeight);
+
+                    BitmapFactory.decodeStream(preview.getDataStream(), null, options);
+                    Log.v("Preview size: " + options.outWidth + "x" + options.outHeight);
+
+                    Log.v("Info: " + new String(info.getData()));
+
+                    return false;
+                }
+            });
         }
-        creator.transform(mTransform).into(cellHolder.mImageView, new Callback() {
-            @Override
-            public void onSuccess() {
-                cellHolder.mProgressBar.hide();
-            }
-
-            @Override
-            public void onError() {
-                cellHolder.mProgressBar.hide();
-            }
-        });
-
-        cellHolder.mImageView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                MessagePart full = ThreePartImageUtils.getFullPart(message);
-                MessagePart preview = ThreePartImageUtils.getPreviewPart(message);
-                MessagePart info = ThreePartImageUtils.getInfoPart(message);
-
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = true;
-
-                BitmapFactory.decodeStream(full.getDataStream(), null, options);
-                Log.v("Full size: " + options.outWidth + "x" + options.outHeight);
-
-                BitmapFactory.decodeStream(preview.getDataStream(), null, options);
-                Log.v("Preview size: " + options.outWidth + "x" + options.outHeight);
-
-                Log.v("Info: " + new String(info.getData()));
-
-                return false;
-            }
-        });
     }
 
     @Override

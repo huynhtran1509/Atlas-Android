@@ -1,6 +1,7 @@
 package com.layer.atlas.messagetypes;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.LruCache;
 import android.view.LayoutInflater;
@@ -9,6 +10,11 @@ import android.view.ViewGroup;
 import com.layer.atlas.provider.ParticipantProvider;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Message;
+
+import rx.Single;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 
 /**
  * CellFactories manage one or more types ot Messages for display within an AtlasMessagesAdapter.
@@ -74,18 +80,18 @@ public abstract class AtlasCellFactory<Tholder extends AtlasCellFactory.CellHold
      * @param message             Message to parse
      * @return Cacheable parsed object generated from the given Message
      */
-    public abstract Tcache parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message);
+    public abstract Single<Tcache> parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message);
 
     /**
      * Renders a Message by applying data to the provided CellHolder.  The CellHolder was previously
      * created in createCellHolder().
      *
      * @param cellHolder CellHolder to bind with Message data.
-     * @param cached
+     * @param cached     Content to be displayed. If it's null, probably it's still loading, but we want to show something.
      * @param message    Message to bind to the CellHolder.
      * @param specs      Information about the CellHolder.
      */
-    public abstract void bindCellHolder(Tholder cellHolder, Tcache cached, Message message, CellHolderSpecs specs);
+    public abstract void bindCellHolder(Tholder cellHolder, @Nullable Tcache cached, Message message, CellHolderSpecs specs);
 
     /**
      * Override to handle RecyclerView scrolling.  Example: pause and resume image loading while
@@ -107,13 +113,27 @@ public abstract class AtlasCellFactory<Tholder extends AtlasCellFactory.CellHold
      * @param message Message to return parsed content object for.
      * @return Parsed content object for the given Message.
      */
-    public Tcache getParsedContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
-        String id = message.getId().toString();
+    public Single<Tcache> getParsedContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
+        final String id = message.getId().toString();
         Tcache value = mCache.get(id);
-        if (value != null) return value;
-        value = parseContent(layerClient, participantProvider, message);
-        if (value != null) mCache.put(id, value);
-        return value;
+        if (value != null) return Single.just(value);
+        return parseContent(layerClient, participantProvider, message)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSuccess(new Action1<Tcache>() {
+                    @Override
+                    public void call(Tcache value1) {
+                        if (value1 != null) mCache.put(id, value1);
+                    }
+                });
+    }
+
+    /**
+     * Returns if it should be marked as read the message when the cell is bound.
+     * @return if it should be marked as read the message when the cell is bound.
+     */
+    public boolean shouldMarkAsReadOnBind() {
+        return true;
     }
 
     /**

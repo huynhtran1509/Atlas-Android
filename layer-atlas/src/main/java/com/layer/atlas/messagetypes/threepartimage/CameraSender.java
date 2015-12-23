@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 
 import com.layer.atlas.R;
@@ -20,36 +19,42 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CameraSender extends AttachmentSender {
     public static final int REQUEST_CODE = 47002;
 
-    private final AtomicReference<String> mPhotoFilePath = new AtomicReference<>(null);
+    private final Class<? extends Activity> cameraActivityClass;
 
     @SuppressWarnings("unused")
-    public CameraSender(int titleResId, Integer iconResId, Activity activity) {
+    public CameraSender(int titleResId, Integer iconResId, Activity activity, Class<? extends Activity> cameraActivityClass) {
         super(titleResId, iconResId, activity);
+        this.cameraActivityClass = cameraActivityClass;
     }
 
     @SuppressWarnings("unused")
-    public CameraSender(String title, Integer iconResId, Activity activity) {
+    public CameraSender(String title, Integer iconResId, Activity activity, Class<? extends Activity> cameraActivityClass) {
         super(title, iconResId, activity);
+        this.cameraActivityClass = cameraActivityClass;
     }
 
     @SuppressWarnings("unused")
-    public CameraSender(int titleResId, Integer iconResId, android.app.Fragment fragment) {
+    public CameraSender(int titleResId, Integer iconResId, android.app.Fragment fragment, Class<? extends Activity> cameraActivityClass) {
         super(titleResId, iconResId, fragment);
+        this.cameraActivityClass = cameraActivityClass;
     }
 
     @SuppressWarnings("unused")
-    public CameraSender(String title, Integer iconResId, android.app.Fragment fragment) {
+    public CameraSender(String title, Integer iconResId, android.app.Fragment fragment, Class<? extends Activity> cameraActivityClass) {
         super(title, iconResId, fragment);
+        this.cameraActivityClass = cameraActivityClass;
     }
 
     @SuppressWarnings("unused")
-    public CameraSender(int titleResId, Integer iconResId, Fragment fragment) {
+    public CameraSender(int titleResId, Integer iconResId, Fragment fragment, Class<? extends Activity> cameraActivityClass) {
         super(titleResId, iconResId, fragment);
+        this.cameraActivityClass = cameraActivityClass;
     }
 
     @SuppressWarnings("unused")
-    public CameraSender(String title, Integer iconResId, Fragment fragment) {
+    public CameraSender(String title, Integer iconResId, Fragment fragment, Class<? extends Activity> cameraActivityClass) {
         super(title, iconResId, fragment);
+        this.cameraActivityClass = cameraActivityClass;
     }
 
     @Override
@@ -58,12 +63,7 @@ public class CameraSender extends AttachmentSender {
             return false;
         }
         if (Log.isLoggable(Log.VERBOSE)) Log.v("Sending camera image");
-        String fileName = "cameraOutput" + System.currentTimeMillis() + ".jpg";
-        File file = new File(getActivity().getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES), fileName);
-        mPhotoFilePath.set(file.getAbsolutePath());
-        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        final Uri outputUri = Uri.fromFile(file);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
+        Intent cameraIntent = new Intent(getContext(), cameraActivityClass);
         startActivityForResult(cameraIntent, REQUEST_CODE);
         return true;
     }
@@ -78,34 +78,12 @@ public class CameraSender extends AttachmentSender {
         if (Log.isLoggable(Log.VERBOSE)) Log.v("Received camera response");
         try {
             String myName = getParticipantProvider().getParticipant(getLayerClient().getAuthenticatedUserId()).getName();
-            Message message = ThreePartImageUtils.newThreePartImageMessage(getActivity(), getLayerClient(), new File(mPhotoFilePath.get()));
+            Message message = ThreePartImageUtils.newThreePartImageMessage(getActivity(), getLayerClient(), (File) null); // FIXME: 05/01/16 this shouldn't be null, but we are not using it
             message.getOptions().pushNotificationMessage(getActivity().getString(R.string.atlas_notification_image, myName));
             send(message);
         } catch (IOException e) {
             if (Log.isLoggable(Log.ERROR)) Log.e(e.getMessage(), e);
         }
         return true;
-    }
-
-    /**
-     * Saves photo file path during e.g. screen rotation
-     */
-    @Override
-    public Parcelable onSaveInstanceState() {
-        String path = mPhotoFilePath.get();
-        if (path == null) return null;
-        Bundle bundle = new Bundle();
-        bundle.putString("photoFilePath", path);
-        return bundle;
-    }
-
-    /**
-     * Restores photo file path during e.g. screen rotation
-     */
-    @Override
-    public void onRestoreInstanceState(Parcelable state) {
-        if (state == null) return;
-        String path = ((Bundle) state).getString("photoFilePath");
-        mPhotoFilePath.set(path);
     }
 }

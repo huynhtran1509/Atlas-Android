@@ -3,6 +3,7 @@ package com.layer.atlas.messagetypes.location;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -26,6 +27,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URLEncoder;
+
+import rx.Single;
 
 public class LocationCellFactory extends AtlasCellFactory<LocationCellFactory.CellHolder, LocationCellFactory.Location> implements View.OnClickListener {
     private static final String PICASSO_TAG = LocationCellFactory.class.getSimpleName();
@@ -63,24 +66,24 @@ public class LocationCellFactory extends AtlasCellFactory<LocationCellFactory.Ce
     }
 
     @Override
-    public Location parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
+    public Single<Location> parseContent(LayerClient layerClient, ParticipantProvider participantProvider, Message message) {
         try {
-            JSONObject o = new JSONObject(new String(message.getMessageParts().get(0).getData()));
-            Location c = new Location();
-            c.mLatitude = o.optDouble(KEY_LATITUDE, 0);
-            c.mLongitude = o.optDouble(KEY_LONGITUDE, 0);
-            c.mLabel = o.optString(KEY_LABEL, null);
-            return c;
+            JSONObject jsonObject = new JSONObject(new String(message.getMessageParts().get(0).getData()));
+            Location location = new Location();
+            location.mLatitude = jsonObject.optDouble(KEY_LATITUDE, 0);
+            location.mLongitude = jsonObject.optDouble(KEY_LONGITUDE, 0);
+            location.mLabel = jsonObject.optString(KEY_LABEL, null);
+            return Single.just(location);
         } catch (JSONException e) {
             if (Log.isLoggable(Log.ERROR)) {
                 Log.e(e.getMessage(), e);
             }
         }
-        return null;
+        return Single.just(null);
     }
 
     @Override
-    public void bindCellHolder(final CellHolder cellHolder, final Location location, Message message, CellHolderSpecs specs) {
+    public void bindCellHolder(final CellHolder cellHolder, @Nullable final Location location, Message message, CellHolderSpecs specs) {
         cellHolder.mImageView.setTag(location);
         cellHolder.mImageView.setOnClickListener(this);
 
@@ -92,19 +95,21 @@ public class LocationCellFactory extends AtlasCellFactory<LocationCellFactory.Ce
         params.width = cellDims[0];
         params.height = cellDims[1];
         cellHolder.mProgressBar.show();
-        mPicasso.load("https://maps.googleapis.com/maps/api/staticmap?zoom=16&maptype=roadmap&scale=2&center=" + location.mLatitude + "," + location.mLongitude + "&markers=color:red%7C" + location.mLatitude + "," + location.mLongitude + "&size=" + mapWidth + "x" + mapHeight)
-                .tag(PICASSO_TAG).placeholder(PLACEHOLDER).resize(cellDims[0], cellDims[1])
-                .transform(mTransform).into(cellHolder.mImageView, new Callback() {
-            @Override
-            public void onSuccess() {
-                cellHolder.mProgressBar.hide();
-            }
+        if (location != null) {
+            mPicasso.load("https://maps.googleapis.com/maps/api/staticmap?zoom=16&maptype=roadmap&scale=2&center=" + location.mLatitude + "," + location.mLongitude + "&markers=color:red%7C" + location.mLatitude + "," + location.mLongitude + "&size=" + mapWidth + "x" + mapHeight)
+                    .tag(PICASSO_TAG).placeholder(PLACEHOLDER).resize(cellDims[0], cellDims[1])
+                    .transform(mTransform).into(cellHolder.mImageView, new Callback() {
+                @Override
+                public void onSuccess() {
+                    cellHolder.mProgressBar.hide();
+                }
 
-            @Override
-            public void onError() {
-                cellHolder.mProgressBar.hide();
-            }
-        });
+                @Override
+                public void onError() {
+                    cellHolder.mProgressBar.hide();
+                }
+            });
+        }
     }
 
     @Override
