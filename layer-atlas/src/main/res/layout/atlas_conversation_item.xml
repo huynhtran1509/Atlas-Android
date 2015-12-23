@@ -17,7 +17,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/atlas_primary_item_height"
-    android:background="@drawable/atlas_swipeable_item_background_selector">
+    android:background="@drawable/atlas_swipeable_item_background_selector"
+    android:clickable="true"
+    android:focusable="true">
 
     <LinearLayout
         android:id="@+id/leavebehind"
