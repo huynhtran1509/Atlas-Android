@@ -73,6 +73,4 @@ public class GallerySender extends AttachmentSender {
         }
         return true;
     }
-
-
 }
