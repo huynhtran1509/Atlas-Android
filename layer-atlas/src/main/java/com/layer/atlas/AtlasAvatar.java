@@ -134,7 +134,7 @@ public class AtlasAvatar extends View {
             Queue<String> withoutAvatars = new LinkedList<String>();
             for (String participantId : mParticipants) {
                 Participant participant = mParticipantProvider.getParticipant(participantId);
-                if (participant == null) continue;
+                if (participant == null || participant.getId() == null) continue;
                 if (participant.getAvatarUrl() != null) {
                     withAvatars.add(participantId);
                 } else {
@@ -168,7 +168,7 @@ public class AtlasAvatar extends View {
 
         for (String added : diff.added) {
             Participant participant = mParticipantProvider.getParticipant(added);
-            if (participant == null) continue;
+            if (participant == null || participant.getId() == null) continue;
             mInitials.put(added, Util.getInitials(participant));
 
             final ImageTarget target;
@@ -186,7 +186,7 @@ public class AtlasAvatar extends View {
         // TODO: make caching intelligent wrt sizing
         for (String existing : diff.existing) {
             Participant participant = mParticipantProvider.getParticipant(existing);
-            if (participant == null) continue;
+            if (participant == null || participant.getId() == null) continue;
             ImageTarget existingTarget = mImageTargets.get(existing);
             mPicasso.cancelRequest(existingTarget);
             toLoad.add(existingTarget);

@@ -330,7 +330,7 @@ public class AtlasMessagesAdapter extends RecyclerView.Adapter<AtlasMessagesAdap
                 message.markAsRead();
             }
             // Sender name, only for first message in cluster
-            if (!oneOnOne && (cluster.mClusterWithPrevious == null || cluster.mClusterWithPrevious == ClusterType.NEW_SENDER)) {
+            if ((!oneOnOne || message.getSender().getUserId() == null) && (cluster.mClusterWithPrevious == null || cluster.mClusterWithPrevious == ClusterType.NEW_SENDER)) {
                 Actor sender = message.getSender();
                 if (sender.getName() != null) {
                     viewHolder.mUserName.setText(sender.getName());
